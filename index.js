@@ -7,7 +7,7 @@ const DIAMETER = 12;
 
 var bubbles = [];
 var last_spawn = 0;
-var spawn_every = 250;
+var spawn_every = 500;
 var bubble_time = 5000;
 var score = 0;
 
@@ -114,7 +114,7 @@ var score = 0;
         kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
-        if (kill[i].state.type == "green") {
+        if (kill[i].state.type == "green" || kill[i].state.correct === true) {
             score -= 1;
         }
     }
