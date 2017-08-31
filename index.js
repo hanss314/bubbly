@@ -1,6 +1,7 @@
 const bubble_types = [
     "red",
-    "green"
+    "green",
+    "equation"
 ];
 const DIAMETER = 12;
 
@@ -156,10 +157,35 @@ function create_bubble() {
     if (collides > 9) {
         return;
     }
-
-    $("#game_area").append(
-        "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
-    );
+    
+    eqquation = "";
+    eq_correct = false;
+    to_append = "";
+    if (new_type === 'equation'){
+        operators = ['+','-','*']
+        equation = Math.ceil(Math.random()*1).toString() + 
+            operators[Math.floor(Math.random() * operators.length)] + 
+            Math.ceil(Math.random()*10).toString();
+        answer = eval(equation)
+        if (Math.random() > 0.5){
+            equation += '=' + answer.toString()
+            eq_correct = true
+        }else{
+            fake_ans = Math.floor(Math.random()*10);
+            if (fake_ans === answer) {fake_ans++;}
+            equation += '=' + fake_ans.toString()
+            eq_correct = false
+        }
+        to_append = 
+            "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div>"+
+            "<div class=\"center\">"+equation+"</div></div>"
+    }else{
+        to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
+    }
+    
+    
+    
+    $("#game_area").append(to_append);
 
     var new_elm = $("#" + new_id);
     var inner_elm = $("#" + new_id + ">.inner");
@@ -182,13 +208,17 @@ function create_bubble() {
             'y': (Math.random() - 0.5) / 10
         }
     };
-
-    bubbles.push({'body': body, 'state': {
-                    'time_start': performance.now(),
-                    'time_length': bubble_time,
-                    'type': new_type,
-                },
-                'dom': {'parent': new_elm, 'inner': inner_elm}});
+    new_bubble = {
+        'body': body, 
+        'state': {
+            'time_start': performance.now(),
+            'time_length': bubble_time,
+            'type': new_type,
+            'correct': eq_correct
+        },
+        'dom': {'parent': new_elm, 'inner': inner_elm}
+    }
+    bubbles.push(new_bubble);
 }
 
 $(document).on("toutchstart mousedown", function (e) {
@@ -224,6 +254,12 @@ $(document).on("toutchstart mousedown", function (e) {
             score++;
         } else if (kill[i].state.type == "red") {
             score --;
+        } else if (kill[i].state.type == "equation") {
+            if(kill[i].state.correct){
+                score++;
+            }else{
+                score--;
+            }
         }
     }
 });

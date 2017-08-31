@@ -56,9 +56,23 @@ body, html {
     background-color: #EBEBEB;
 }
 
+.bubble.equation {
+    background-color: #FFFF00;
+}
+.bubble.equation>.inner {
+    background-color: #E0E0E0;
+}
+
 .bubble.red {
     background-color: #C04A46;
 }
 .bubble.red>.inner {
     background-color: #ADADAD;
+}
+
+.center {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%); 
+    text-align: center;
 }
