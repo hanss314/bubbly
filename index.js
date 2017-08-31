@@ -165,12 +165,12 @@ function create_bubble() {
             Math.ceil(Math.random()*10).toString();
         answer = eval(equation)
         if (Math.random() > 0.5){
-            equation += '=' + answer.toString()
+            equation += '<br>=' + answer.toString()
             eq_correct = true
         }else{
             fake_ans = Math.floor(Math.random()*10);
             if (fake_ans === answer) {fake_ans++;}
-            equation += '=' + fake_ans.toString()
+            equation += '<br>=' + fake_ans.toString()
             eq_correct = false
         }
         to_append = 
