@@ -112,6 +112,10 @@ var score = 0;
     for (i = 0; i < kill.length; i += 1) {
         kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
+
+        if (kill[i].state.type == "green") {
+            score -= 1;
+        }
     }
 
     // Spawn more
@@ -186,7 +190,7 @@ function create_bubble() {
     bubbles.push({'body': body, 'state': {
                     'time_start': performance.now(),
                     'time_length': bubble_time,
-                    'type': new_type,
+                    'type': new_type
                 },
                 'dom': {'parent': new_elm, 'inner': inner_elm}});
 }
