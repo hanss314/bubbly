@@ -147,52 +147,47 @@ function create_bubble() {
                 && position.y + position.radius + new_radius > new_y
                 && position.y < new_y + position.radius + new_radius) {
 
-                var dist = Math.sqrt(((position.x - new_x) * (position.x - new_x))
-                    + ((position.y - new_y) * (position.y - new_y)));
-                if (dist < position.radius + new_radius) {
-                    // Collision.
-                    collision = true;
-                    collides += 1;
-                }
+                collision = true;
+                collides += 1;
             }
         }
     }
-    if (collides > 9) {
-        return;
+    if (collides < 9) {
+        $("#game_area").append(
+            "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
+        );
+
+        var new_elm = $("#" + new_id);
+        var inner_elm = $("#" + new_id + ">.inner");
+        new_elm.css(
+            {
+                top: new_y + "%",
+                left: new_x + "%"
+            }
+        );
+
+        var body = {
+            'position': {
+                'x': new_x + DIAMETER / 2,
+                'y': new_y + DIAMETER / 2,
+                'radius': new_radius / 2,
+                'mass': 1
+            },
+            'velocity': {
+                'x': (Math.random() - 0.5) / 10,
+                'y': (Math.random() - 0.5) / 10
+            }
+        };
+
+        bubbles.push({
+            'body': body, 'state': {
+                'time_start': performance.now(),
+                'time_length': bubble_time,
+                'type': new_type
+            },
+            'dom': {'parent': new_elm, 'inner': inner_elm}
+        });
     }
-
-    $("#game_area").append(
-        "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
-    );
-
-    var new_elm = $("#" + new_id);
-    var inner_elm = $("#" + new_id + ">.inner");
-    new_elm.css(
-        {
-            top: new_y + "%",
-            left: new_x + "%"
-        }
-    );
-
-    var body = {
-        'position': {
-            'x': new_x + DIAMETER / 2,
-            'y': new_y + DIAMETER / 2,
-            'radius': new_radius / 2,
-            'mass': 1
-        },
-        'velocity': {
-            'x': (Math.random() - 0.5) / 10,
-            'y': (Math.random() - 0.5) / 10
-        }
-    };
-
-    bubbles.push({'body': body, 'state': {
-                    'time_start': performance.now(),
-                    'time_length': bubble_time,
-                    'type': new_type
-                },
-                'dom': {'parent': new_elm, 'inner': inner_elm}});
 }
 
 $(document).on("toutchstart mousedown", function (e) {
