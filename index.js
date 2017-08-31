@@ -113,6 +113,10 @@ var score = 0;
     for (i = 0; i < kill.length; i += 1) {
         kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
+
+        if (kill[i].state.type == "green") {
+            score -= 1;
+        }
     }
 
     // Spawn more
@@ -144,21 +148,14 @@ function create_bubble() {
                 && position.y + position.radius + new_radius > new_y
                 && position.y < new_y + position.radius + new_radius) {
 
-                var dist = Math.sqrt(((position.x - new_x) * (position.x - new_x))
-                    + ((position.y - new_y) * (position.y - new_y)));
-                if (dist < position.radius + new_radius) {
-                    // Collision.
-                    collision = true;
-                    collides += 1;
-                }
+                collision = true;
+                collides += 1;
             }
         }
     }
-    if (collides > 9) {
-        return;
-    }
+
     
-    eqquation = "";
+    equation = "";
     eq_correct = false;
     to_append = "";
     if (new_type === 'equation'){
@@ -182,43 +179,43 @@ function create_bubble() {
     }else{
         to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
     }
-    
-    
-    
-    $("#game_area").append(to_append);
 
-    var new_elm = $("#" + new_id);
-    var inner_elm = $("#" + new_id + ">.inner");
-    new_elm.css(
-        {
-            top: new_y + "%",
-            left: new_x + "%"
-        }
-    );
+    if (collides < 9) {
+        $("#game_area").append(to_append);
 
-    var body = {
-        'position': {
-            'x': new_x + DIAMETER / 2,
-            'y': new_y + DIAMETER / 2,
-            'radius': new_radius / 2,
-            'mass': 1
-        },
-        'velocity': {
-            'x': (Math.random() - 0.5) / 10,
-            'y': (Math.random() - 0.5) / 10
+        var new_elm = $("#" + new_id);
+        var inner_elm = $("#" + new_id + ">.inner");
+        new_elm.css(
+            {
+                top: new_y + "%",
+                left: new_x + "%"
+            }
+        );
+
+        var body = {
+            'position': {
+                'x': new_x + DIAMETER / 2,
+                'y': new_y + DIAMETER / 2,
+                'radius': new_radius / 2,
+                'mass': 1
+            },
+            'velocity': {
+                'x': (Math.random() - 0.5) / 10,
+                'y': (Math.random() - 0.5) / 10
+            }
+        };
+        new_bubble = {
+            'body': body, 
+            'state': {
+                'time_start': performance.now(),
+                'time_length': bubble_time,
+                'type': new_type,
+                'correct': eq_correct
+            },
+            'dom': {'parent': new_elm, 'inner': inner_elm}
         }
-    };
-    new_bubble = {
-        'body': body, 
-        'state': {
-            'time_start': performance.now(),
-            'time_length': bubble_time,
-            'type': new_type,
-            'correct': eq_correct
-        },
-        'dom': {'parent': new_elm, 'inner': inner_elm}
+        bubbles.push(new_bubble);
     }
-    bubbles.push(new_bubble);
 }
 
 $(document).on("toutchstart mousedown", function (e) {
