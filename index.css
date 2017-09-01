@@ -28,6 +28,8 @@ body, html {
     transform: translate(-50%, -50%);
     font-size: 15vmin;
     color: #8D8D8D;
+    z-index: 2;
+    opacity: 0.8;
     -webkit-user-select: none;        
     -moz-user-select: none; 
     -ms-user-select: none; 
@@ -41,6 +43,7 @@ body, html {
     background-color: #f0f;
     border-radius: 6vmin;
     position: absolute;
+    z-index: 1;
 }
 .bubble>.inner {
     content: '';
