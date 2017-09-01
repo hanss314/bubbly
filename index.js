@@ -10,8 +10,10 @@ var last_spawn = 0;
 var spawn_every = 500;
 var bubble_time = 5000;
 var score = 0;
-var alive = true;
+var alive = false;
 var faded = false;
+
+var name = "";
 
 (function tick() {
     window.requestAnimationFrame(tick);
@@ -236,7 +238,7 @@ function create_bubble() {
     }
 }
 
-$(document).on("toutchstart mousedown", function (e) {
+$(document).on("touchstart mousedown", function (e) {
     if (alive) {
         var rel_x, rel_y, ga;
         ga = $("#game_area");
@@ -337,4 +339,106 @@ function trigger_death(bubble) {
 
 $().ready(function () {
     console.log("BubblyPop.io v0.0.1");
+    console.debug("Generating keyboard.");
+    var keyboard = $("#keyboard");
+    var keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ←↵";
+    var x = 0, y = 0;
+
+    for (var i = 0; i < keys.length; i++) {
+        var element = "<div class=\"key\" id=\"key-" + keys[i] + "\">" + keys[i] + "</div>";
+        keyboard.append(element);
+        element = keyboard.find("#key-" + keys[i]);
+        element.css({
+            left: x * 12 + "vmin",
+            top: y * 12 + "vmin"
+        });
+
+        x ++;
+        if (x >= 7) {
+            x = 0;
+            y ++;
+        }
+    }
+    console.debug("Done. Binding events.");
+    $(".key").on("touchstart mousedown", function (e) {
+        e.preventDefault();
+
+        if (!alive) {
+            var key = e.currentTarget.innerHTML;
+            if (key != "←" && key != "↵") {
+                name += key;
+                $("#name-area").text(name);
+            } else if (key == "←") {
+                if (name.length > 1) {
+                    name = name.substring(0, name.length - 1);
+                } else {
+                    name = "";
+                }
+                $("#name-area").text(name);
+            } else {
+
+                var dom_death = $("#clear");
+                var dom_death2 = $("#death");
+                var dom_restart = $("#restart-fade");
+                var game_area = $("#game_area");
+                var title_screen = $("#title-screen");
+
+                alive = false;
+                dom_death.css(
+                    {
+                        width: 0,
+                        height: 0,
+                        opacity: 0,
+                        top: e.pageY - title_screen.position().top + "px",
+                        left: e.pageX - title_screen.position().left + "px"
+                    }
+                );
+                dom_restart.css(
+                    {
+                        width: 0,
+                        height: 0,
+                        opacity: 0,
+                        top: e.pageY - title_screen.position().top + "px",
+                        left: e.pageX - title_screen.position().left + "px"
+                    }
+                );
+                dom_restart.show();
+                dom_death.animate(
+                    {
+                        width: '250vmin',
+                        height: '250vmin',
+                        opacity: 1
+                    }, 1500, 'swing', function () {
+                        $("#title-screen").hide();
+                        game_area.show();
+                        dom_death2.css(
+                            {
+                                width: '250vmin',
+                                height: '250vmin',
+                                opacity: 1
+                            }
+                        );
+                        dom_death2.show();
+
+                        dom_restart.animate(
+                            {
+                                width: '250vmin',
+                                height: '250vmin',
+                                opacity: 1
+                            }, 1000, 'swing', function () {
+                                dom_restart.fadeOut(400);
+                                dom_death.hide();
+                                dom_death2.hide();
+                                score = 0;
+                                last_spawn = performance.now() + 1000;
+                                alive = true;
+                            }
+                        );
+                        dom_restart.show();
+                    }
+                );
+                dom_death.show();
+            }
+        }
+    });
 });
