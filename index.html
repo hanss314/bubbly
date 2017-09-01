@@ -2,18 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="index.css">
     <title>Bubbly Pop</title>
-
 </head>
 <body>
-    <div id="game_area">
-        <div id="score">15</div>
-        <!--<div class="bubble green"><div class="inner"></div></div>
-        <div class="bubble red"><div class="inner"></div></div>-->
+    <div id="title-screen">
+        <div id="title">POP BUBBLY</div>
+        <div id="sub-title">Enter your name to begin</div>
+        <div id="name-area"></div>
+        <div id="keyboard"></div>
+
+        <div id="clear" style="display:none"></div>
+        <div id="show" style="display:none"></div>
     </div>
 
-    <script src="matter.min.js" type="text/javascript"></script>
+    <div id="game_area" style="display:none">
+        <div id="score">0</div>
+        <div id="death" style="display:none"></div>
+        <div id="restart-fade" style="display:none"></div>
+    </div>
+
+    <input type="file" id="file-loader" style="opacity: 0;">
+
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" type="text/javascript"></script>
     <script src="index.js" type="text/javascript"></script>
 </body>
