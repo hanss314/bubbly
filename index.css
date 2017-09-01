@@ -28,6 +28,11 @@ body, html {
     transform: translate(-50%, -50%);
     font-size: 15vmin;
     color: #8D8D8D;
+    -webkit-user-select: none;        
+    -moz-user-select: none; 
+    -ms-user-select: none; 
+    -o-user-select: none;
+    user-select: none;
 }
 
 .bubble {
