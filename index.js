@@ -262,16 +262,17 @@ $(document).on("toutchstart mousedown", function (e) {
     }
 
     for (i = 0; i < kill.length; i ++) {
-        kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
         if (kill[i].state.type == "green") {
             score++;
+            kill[i].dom.parent.remove();
         } else if (kill[i].state.type == "red") {
             trigger_death(kill[i]);
         } else if (kill[i].state.type == "equation") {
             if(kill[i].state.correct){
                 score++;
+                kill[i].dom.parent.remove();
             }else{
                 trigger_death(kill[i]);
             }
@@ -283,6 +284,7 @@ function trigger_death(bubble) {
     var dom_death = $("#death");
     var dom_restart = $("#restart-fade");
     alive = false;
+    bubble.dom.parent.css('z-index', 3);
     dom_death.css(
         {
             width: 0,
@@ -307,13 +309,14 @@ function trigger_death(bubble) {
             height: '250vmin',
             opacity: 1
         }, 1500, 'swing', function () {
+            bubble.dom.parent.fadeOut(400);
             dom_restart.animate(
                 {
                     width: '250vmin',
                     height: '250vmin',
                     opacity: 1
                 }, 1000, 'swing', function () {
-                    dom_restart.fadeOut();
+                    dom_restart.fadeOut(400);
                     dom_death.hide();
                     score = 0;
                     alive = true;
@@ -321,6 +324,7 @@ function trigger_death(bubble) {
                     for (var i = 0; i < bubbles.length; i += 1) {
                         bubbles[i].dom.parent.remove();
                     }
+                    bubble.dom.parent.remove();
                     bubbles = [];
                 }
             );
