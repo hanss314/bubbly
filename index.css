@@ -141,6 +141,34 @@ body, html {
     background-color: #ADADAD;
 }
 
+.bubble.triple {
+    background-color: #43A49D;
+}
+.bubble.triple>.inner {
+    background-color: #ADADAD;
+}
+.bubble.triple>.ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent;
+    border: 0.35vmin solid #23272A;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+}
+.bubble.triple>.ring.ring1 {
+    width: 110%;
+    height: 110%;
+}.bubble.triple>.ring.ring2 {
+    width: 125%;
+    height: 125%;
+}.bubble.triple>.ring.ring3 {
+    width: 140%;
+    height: 140%;
+}
+
 .center {
     position: relative;
     top: 50%;

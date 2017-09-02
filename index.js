@@ -1,7 +1,8 @@
 const bubble_types = [
     "red",
     "green",
-    "equation"
+    "equation",
+    "triple"
 ];
 const DIAMETER = 12;
 
@@ -12,6 +13,7 @@ var bubble_time = 5000;
 var score = 0;
 var alive = false;
 var faded = false;
+var death = true;  // Debug. Alter this in the console before playing.
 
 var name = "";
 
@@ -260,6 +262,8 @@ function create_bubble() {
                 to_append =
                     "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div>" +
                     "<div class=\"center\">" + equation + "</div></div>"
+            } else if (new_type === "triple") {
+                to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"ring ring1\"></div><div class=\"ring ring2\"></div><div class=\"ring ring3\"></div><div class=\"inner\"></div></div>"
             } else {
                 to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
             }
@@ -294,7 +298,8 @@ function create_bubble() {
                     'time_start': performance.now(),
                     'time_length': bubble_time,
                     'type': new_type,
-                    'correct': eq_correct
+                    'correct': eq_correct,
+                    'rings': 3
                 },
                 'dom': {'parent': new_elm, 'inner': inner_elm}
             };
@@ -304,6 +309,11 @@ function create_bubble() {
 }
 
 function trigger_death(bubble) {
+    if (!death) {
+        bubble.dom.parent.remove();
+        return;
+    }
+
     var dom_death = $("#death");
     var dom_restart = $("#restart-fade");
     alive = false;
@@ -442,6 +452,8 @@ $().ready(function () {
     var x = 0, y = 0;
 
     for (var i = 0; i < keys.length; i++) {
+        $("#keybar").append("<div class=\"kbkey\">" + keys[i] + "</div>");
+
         var element = "<div class=\"key\" id=\"key-" + keys[i] + "\">" + keys[i] + "</div>";
         keyboard.append(element);
         element = keyboard.find("#key-" + keys[i]);
@@ -568,20 +580,29 @@ $().ready(function () {
             }
 
             for (i = 0; i < kill.length; i ++) {
-                bubbles.splice(bubbles.indexOf(kill[i]), 1);
+                if (kill[i].state.type != "triple" || kill[i].state.rings == 1) {
+                    bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
-                if (kill[i].state.type == "green") {
-                    score++;
-                    kill[i].dom.parent.remove();
-                } else if (kill[i].state.type == "red") {
-                    trigger_death(kill[i]);
-                } else if (kill[i].state.type == "equation") {
-                    if (kill[i].state.correct) {
+                    if (kill[i].state.type == "green") {
                         score++;
                         kill[i].dom.parent.remove();
-                    } else {
+                    } else if (kill[i].state.type == "red") {
                         trigger_death(kill[i]);
+                    } else if (kill[i].state.type == "equation") {
+                        if (kill[i].state.correct) {
+                            score++;
+                            kill[i].dom.parent.remove();
+                        } else {
+                            trigger_death(kill[i]);
+                        }
+                    } else if (kill[i].state.type == "triple") {
+                        score++;
+                        kill[i].dom.parent.remove();
                     }
+                } else {
+                    kill[i].dom.parent.find(".ring.ring" + kill[i].state.rings).remove();
+                    kill[i].state.rings --;
+                    kill[i].state.time_start = performance.now();
                 }
             }
         }
