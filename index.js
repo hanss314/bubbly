@@ -2,7 +2,8 @@ const bubble_types = [
     "red",
     "green",
     "equation",
-    "triple"
+    "triple"//,
+    //"split" // TODO: Work out how to spawn bubbles in vicinity but not overlapping.
 ];
 const DIAMETER = 12;
 
@@ -264,6 +265,8 @@ function create_bubble() {
                     "<div class=\"center\">" + equation + "</div></div>"
             } else if (new_type === "triple") {
                 to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"ring ring1\"></div><div class=\"ring ring2\"></div><div class=\"ring ring3\"></div><div class=\"inner\"></div></div>"
+            } else if (new_type == "split") {
+                to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div><div class=\"smol-ball sb1\"></div><div class=\"smol-ball sb2\"></div><div class=\"smol-ball sb3\"></div></div>"
             } else {
                 to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
             }
@@ -598,6 +601,13 @@ $().ready(function () {
                     } else if (kill[i].state.type == "triple") {
                         score++;
                         kill[i].dom.parent.remove();
+                    } else if (kill[i].state.type == "split") {
+                        score++;
+                        kill[i].dom.parent.remove();
+
+                        for (var j = 0; j < 3; j++) {
+                            create_bubble();
+                        }
                     }
                 } else {
                     kill[i].dom.parent.find(".ring.ring" + kill[i].state.rings).remove();
