@@ -141,6 +141,62 @@ body, html {
     background-color: #ADADAD;
 }
 
+.bubble.triple {
+    background-color: #43A49D;
+}
+.bubble.triple>.inner {
+    background-color: #ADADAD;
+}
+.bubble.triple>.ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent;
+    border: 0.35vmin solid #23272A;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+}
+.bubble.triple>.ring.ring1 {
+    width: 110%;
+    height: 110%;
+}
+.bubble.triple>.ring.ring2 {
+    width: 125%;
+    height: 125%;
+}
+.bubble.triple>.ring.ring3 {
+    width: 140%;
+    height: 140%;
+}
+
+.bubble.split {
+    background-color: #0000FF;
+}
+.bubble.split>.inner {
+    background-color: #ADADAD;
+}
+.bubble.split>.smol-ball {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent;
+    border: 1vmin solid #000085;
+    width: 15%;
+    height: 15%;
+    border-radius: 50%;
+}
+.bubble.split>.smol-ball.sb2 {
+    top: 63%;
+    left: 28%;
+}
+.bubble.split>.smol-ball.sb3 {
+    top: 63%;
+    left: 72%;
+}
+
 .center {
     position: relative;
     top: 50%;

@@ -1,7 +1,9 @@
 const bubble_types = [
     "red",
     "green",
-    "equation"
+    "equation",
+    "triple"//,
+    //"split" // TODO: Work out how to spawn bubbles in vicinity but not overlapping.
 ];
 const DIAMETER = 12;
 
@@ -12,16 +14,22 @@ var bubble_time = 5000;
 var score = 0;
 var alive = false;
 var faded = false;
-var physics = false;
+var death = true;  // Debug. Alter this in the console before playing.
 
 var name = "";
+
+var osu = false;
+var osu_file = "";
+var osu_hitpoints = [];
+var osu_timestamp = 0;
+var osu_last_timestamp = 0;
 
 (function tick() {
     window.requestAnimationFrame(tick);
 
     $("#score").text(score);
 
-    if (physics) {
+    if (!osu) {
         var i, j, position, velocity, position2, velocity2;
         // Physics
 
@@ -83,6 +91,56 @@ var name = "";
                 }
             }
         }
+    } else if (alive) {
+        for (i = 0; i < osu_hitpoints.length; i++) {
+            var hp = osu_hitpoints[i];
+            if (hp[2] > osu_last_timestamp && hp[2] <= osu_timestamp) {
+                console.log(hp);
+
+                var new_id = Date.now();
+                var new_type = "green";
+
+                var to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
+
+                $("#game_area").append(to_append);
+
+
+                var new_elm = $("#" + new_id);
+                var inner_elm = $("#" + new_id + ">.inner");
+                new_elm.css(
+                    {
+                        top: hp[1] + "%",
+                        left: hp[0] + "%"
+                    }
+                );
+
+                var body = {
+                    'position': {
+                        'x': hp[0],
+                        'y': hp[1],
+                        'radius': DIAMETER / 2,
+                        'mass': 1
+                    },
+                    'velocity': {
+                        'x': (Math.random() - 0.5) / 10,
+                        'y': (Math.random() - 0.5) / 10
+                    }
+                };
+                var new_bubble = {
+                    'body': body,
+                    'state': {
+                        'time_start': performance.now(),
+                        'time_length': bubble_time,
+                        'type': new_type,
+                        'correct': false
+                    },
+                    'dom': {'parent': new_elm, 'inner': inner_elm}
+                };
+                bubbles.push(new_bubble);
+            }
+        }
+        osu_last_timestamp = osu_timestamp;
+        osu_timestamp += 16;
     }
 
     // Render
@@ -121,15 +179,17 @@ var name = "";
         kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
-        if (kill[i].state.type == "green" || kill[i].state.correct === true) {
-            if (alive) {trigger_death(kill[i])};
+        if (kill[i].state.type == "green" || kill[i].state.correct === true || kill[i].state.type == "triple") {
+            if (alive && !osu) {trigger_death(kill[i])};
         }
     }
 
     // Spawn more
     if (performance.now() - last_spawn > spawn_every) {
-        create_bubble();
-        last_spawn = performance.now();
+        if (!osu) {
+            create_bubble();
+            last_spawn = performance.now();
+        }
     }
 
     if (!(faded || alive)) {
@@ -150,98 +210,113 @@ function create_bubble() {
     if (!alive) {
         return
     }
+
     var new_type = Math.floor(Math.random() * bubble_types.length);
     new_type = bubble_types[new_type];
     var new_id = Date.now();
 
-    var collision = true;
-    var collides = 0;
-    while (collision && collides < 10) {
-        var new_x = Math.floor(Math.random() * (101 - DIAMETER));
-        var new_y = Math.floor(Math.random() * (101 - DIAMETER));
-        var new_radius = DIAMETER;
+    if (!osu) {
+        var collision = true;
+        var collides = 0;
+        while (collision && collides < 10) {
+            var new_x = Math.floor(Math.random() * (101 - DIAMETER));
+            var new_y = Math.floor(Math.random() * (101 - DIAMETER));
+            var new_radius = DIAMETER;
 
-        collision = false;
+            collision = false;
 
-        for (var i = 0; i < bubbles.length; i += 1) {
-            var position = bubbles[i].body.position;
+            for (var i = 0; i < bubbles.length; i += 1) {
+                var position = bubbles[i].body.position;
 
-            if (position.x + position.radius + new_radius > new_x
-                && position.x < new_x + position.radius + new_radius
-                && position.y + position.radius + new_radius > new_y
-                && position.y < new_y + position.radius + new_radius) {
+                if (position.x + position.radius + new_radius > new_x
+                    && position.x < new_x + position.radius + new_radius
+                    && position.y + position.radius + new_radius > new_y
+                    && position.y < new_y + position.radius + new_radius) {
 
-                collision = true;
-                collides += 1;
+                    collision = true;
+                    collides += 1;
+                }
             }
         }
-    }
 
-    if (collides < 9) {
-        var equation = "";
-        var eq_correct = false;
-        var to_append = "";
-        if (new_type === 'equation'){
-            var operators = ['+','-','*'];
-            equation = Math.ceil(Math.random()).toString() +
-                operators[Math.floor(Math.random() * operators.length)] +
-                Math.ceil(Math.random()*10).toString();
-            var answer = eval(equation);
-            if (Math.random() > 0.5){
-                equation += '<br>=' + answer.toString();
-                eq_correct = true
-            }else{
-                var fake_ans = Math.floor(Math.random()*10);
-                if (fake_ans === answer) {fake_ans++;}
-                equation += '<br>=' + fake_ans.toString();
-                eq_correct = false
+        if (collides < 9) {
+            var equation = "";
+            var eq_correct = false;
+            var to_append = "";
+            if (new_type === 'equation') {
+                var operators = ['+', '-', '*'];
+                equation = Math.ceil(Math.random()).toString() +
+                    operators[Math.floor(Math.random() * operators.length)] +
+                    Math.ceil(Math.random() * 10).toString();
+                var answer = eval(equation);
+                if (Math.random() > 0.5) {
+                    equation += '<br>=' + answer.toString();
+                    eq_correct = true
+                } else {
+                    var fake_ans = Math.floor(Math.random() * 10);
+                    if (fake_ans === answer) {
+                        fake_ans++;
+                    }
+                    equation += '<br>=' + fake_ans.toString();
+                    eq_correct = false
+                }
+                to_append =
+                    "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div>" +
+                    "<div class=\"center\">" + equation + "</div></div>"
+            } else if (new_type === "triple") {
+                to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"ring ring1\"></div><div class=\"ring ring2\"></div><div class=\"ring ring3\"></div><div class=\"inner\"></div></div>"
+            } else if (new_type == "split") {
+                to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div><div class=\"smol-ball sb1\"></div><div class=\"smol-ball sb2\"></div><div class=\"smol-ball sb3\"></div></div>"
+            } else {
+                to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
             }
-            to_append =
-                "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div>"+
-                "<div class=\"center\">"+equation+"</div></div>"
-        }else{
-            to_append = "<div id=\"" + new_id + "\" class=\"bubble " + new_type + "\"><div class=\"inner\"></div></div>"
+
+
+            $("#game_area").append(to_append);
+
+            var new_elm = $("#" + new_id);
+            var inner_elm = $("#" + new_id + ">.inner");
+            new_elm.css(
+                {
+                    top: new_y + "%",
+                    left: new_x + "%"
+                }
+            );
+
+            var body = {
+                'position': {
+                    'x': new_x + DIAMETER / 2,
+                    'y': new_y + DIAMETER / 2,
+                    'radius': new_radius / 2,
+                    'mass': 1
+                },
+                'velocity': {
+                    'x': (Math.random() - 0.5) / 10,
+                    'y': (Math.random() - 0.5) / 10
+                }
+            };
+            var new_bubble = {
+                'body': body,
+                'state': {
+                    'time_start': performance.now(),
+                    'time_length': bubble_time,
+                    'type': new_type,
+                    'correct': eq_correct,
+                    'rings': 3
+                },
+                'dom': {'parent': new_elm, 'inner': inner_elm}
+            };
+            bubbles.push(new_bubble);
         }
-
-
-        $("#game_area").append(to_append);
-
-        var new_elm = $("#" + new_id);
-        var inner_elm = $("#" + new_id + ">.inner");
-        new_elm.css(
-            {
-                top: new_y + "%",
-                left: new_x + "%"
-            }
-        );
-
-        var body = {
-            'position': {
-                'x': new_x + DIAMETER / 2,
-                'y': new_y + DIAMETER / 2,
-                'radius': new_radius / 2,
-                'mass': 1
-            },
-            'velocity': {
-                'x': (Math.random() - 0.5) / 10,
-                'y': (Math.random() - 0.5) / 10
-            }
-        };
-        var new_bubble = {
-            'body': body, 
-            'state': {
-                'time_start': performance.now(),
-                'time_length': bubble_time,
-                'type': new_type,
-                'correct': eq_correct
-            },
-            'dom': {'parent': new_elm, 'inner': inner_elm}
-        };
-        bubbles.push(new_bubble);
     }
 }
 
 function trigger_death(bubble) {
+    if (!death) {
+        bubble.dom.parent.remove();
+        return;
+    }
+
     var dom_death = $("#death");
     var dom_restart = $("#restart-fade");
     alive = false;
@@ -309,7 +384,67 @@ function readSingleFile(e) {
 }
 
 function load_osu() {
-    $("#file-loader").trigger('click');
+    var loader = $("#file-loader");
+
+    loader.trigger('click');
+
+    loader.on("change", function(event) {
+        var file = loader[0].files[0];
+        var reader  = new FileReader();
+
+        reader.readAsText(file);
+
+        reader.addEventListener("load", function () {
+            console.log(reader.result);
+            osu = true;
+            osu_file = reader.result;
+            var osu_lines = osu_file.split('\n');
+            osu_hitpoints = [];
+            var hp = false;
+            for (var i = 0; i < osu_lines.length; i++) {
+                var line = osu_lines[i];
+                if (line.startsWith("[HitObjects]")) {
+                    hp = true;
+                } else if (line[0] == "[") {
+                    hp = false;
+                } else if (hp) {
+                    // In [HitObjects]
+                    var parts = line.split(',');
+                    if (parts.length != 7) {
+                        var x, y, time, points;
+                        if (parts.length > 6) {
+                            // Slider
+                            x = parts[0];
+                            y = parts[1];
+                            time = parts[2];
+                            points = parts[3].split("|").slice(1);
+                            x = (x / 512) * 100;
+                            y = (y / 385) * 100;
+                            osu_hitpoints.push([x, y, time]);
+
+                            for (var j = 0; j < points.length; j ++) {
+                                var s = points[j].split(":");
+                                x = s[0];
+                                y = s[1];
+
+                                x = (x / 512) * 100;
+                                y = (y / 385) * 100;
+                                osu_hitpoints.push([x, y, time]);
+                            }
+                        } else {
+                            // Hit circle
+                            x = parts[0];
+                            y = parts[1];
+                            time = parts[2];
+                            x = (x / 512) * 100;
+                            y = (y / 385) * 100;
+                            osu_hitpoints.push([x, y, time]);
+                        }
+                    }
+                }
+            }
+        });
+    });
 }
 
 $().ready(function () {
@@ -320,6 +455,8 @@ $().ready(function () {
     var x = 0, y = 0;
 
     for (var i = 0; i < keys.length; i++) {
+        $("#keybar").append("<div class=\"kbkey\">" + keys[i] + "</div>");
+
         var element = "<div class=\"key\" id=\"key-" + keys[i] + "\">" + keys[i] + "</div>";
         keyboard.append(element);
         element = keyboard.find("#key-" + keys[i]);
@@ -335,6 +472,7 @@ $().ready(function () {
         }
     }
     console.debug("Done. Binding events.");
+
     $(".key").on("touchstart mousedown", function (e) {
         e.preventDefault();
 
@@ -417,7 +555,6 @@ $().ready(function () {
         }
     });
 
-
     $(document).on("touchstart mousedown", function (e) {
         e.preventDefault();
 
@@ -446,22 +583,40 @@ $().ready(function () {
             }
 
             for (i = 0; i < kill.length; i ++) {
-                bubbles.splice(bubbles.indexOf(kill[i]), 1);
+                if (kill[i].state.type != "triple" || kill[i].state.rings == 1) {
+                    bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
-                if (kill[i].state.type == "green") {
-                    score++;
-                    kill[i].dom.parent.remove();
-                } else if (kill[i].state.type == "red") {
-                    trigger_death(kill[i]);
-                } else if (kill[i].state.type == "equation") {
-                    if (kill[i].state.correct) {
+                    if (kill[i].state.type == "green") {
                         score++;
                         kill[i].dom.parent.remove();
-                    } else {
+                    } else if (kill[i].state.type == "red") {
                         trigger_death(kill[i]);
+                    } else if (kill[i].state.type == "equation") {
+                        if (kill[i].state.correct) {
+                            score++;
+                            kill[i].dom.parent.remove();
+                        } else {
+                            trigger_death(kill[i]);
+                        }
+                    } else if (kill[i].state.type == "triple") {
+                        score++;
+                        kill[i].dom.parent.remove();
+                    } else if (kill[i].state.type == "split") {
+                        score++;
+                        kill[i].dom.parent.remove();
+
+                        for (var j = 0; j < 3; j++) {
+                            create_bubble();
+                        }
                     }
+                } else {
+                    kill[i].dom.parent.find(".ring.ring" + kill[i].state.rings).remove();
+                    kill[i].state.rings --;
+                    kill[i].state.time_start = performance.now();
                 }
             }
         }
     });
+
+    load_osu();
 });
