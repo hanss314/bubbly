@@ -179,7 +179,7 @@ var osu_last_timestamp = 0;
         kill[i].dom.parent.remove();
         bubbles.splice(bubbles.indexOf(kill[i]), 1);
 
-        if (kill[i].state.type == "green" || kill[i].state.correct === true) {
+        if (kill[i].state.type == "green" || kill[i].state.correct === true || kill[i].state.type == "triple") {
             if (alive && !osu) {trigger_death(kill[i])};
         }
     }
